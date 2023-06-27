@@ -6,7 +6,7 @@ const sqlite3 = require("sqlite3");
 const app = express();
 app.use(express.json());
 
-const dbPath = path.join(__dirname, "goodreads.db");
+const dbPath = path.join(__dirname, "covid19India.db");
 
 let db = null;
 
@@ -43,7 +43,7 @@ const convertDbObjectToResponseObject = (dbObject) => {
 //API 1
 app.get("/states/", async (request, response) => {
   const statesNames = `select * from state;`;
-  const allStatesArray = await db.all(allStatesArray);
+  const allStatesArray = await db.all(statesNames);
   response.send(
     allStatesArray.map((eachStates) =>
       convertDbObjectToResponseObject(eachStates)
@@ -53,7 +53,7 @@ app.get("/states/", async (request, response) => {
 
 //API 2
 app.get("/states/:stateId/", async (request, response) => {
-  const { studentId } = request.params;
+  const { stateId } = request.params;
   const stateQuery = `select * from state where state_id=${stateId};`;
   const stateDetails = await db.get(stateQuery);
   response.send(convertDbObjectToResponseObject(stateDetails));
@@ -61,8 +61,8 @@ app.get("/states/:stateId/", async (request, response) => {
 //API3
 
 app.post("/districts/", async (request, response) => {
-  const { districtName, stateId, cured, cases, active, deaths } = request.body;
-  const addNewDistrict = `insert into district(district_name,state_id,cases,active,deaths,cured)
+  const { districtName, stateId, cured, cases, deaths, active } = request.body;
+  const addNewDistrict = `insert into district (district_name,state_id,cured,cases,deaths,active)
     values( '${districtName}',
             '${stateId}',
             '${cured}',
@@ -94,14 +94,14 @@ app.delete("/districts/:districtId/", async (request, response) => {
 //api6
 app.put("/districts/:districtId/", async (request, response) => {
   const { districtId } = request.params;
-  const { districtName, stateId, cured, cases, active, deaths } = request.body;
+  const { districtName, stateId, cured, cases, deaths, active } = request.body;
   const updateDistrict = `update  district
     set district_name='${districtName}',
             state_id='${stateId}',
-            cases='${cured}',
-            active='${cases}',
+            cured='${cured}',
+            cases='${cases}',
             deaths='${deaths},
-            cured='${active}'
+            active='${active}'
             where district_id=${districtId}`;
   await db.run(updateDistrict);
   response.send("District Details Updated");
